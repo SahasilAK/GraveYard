@@ -1,61 +1,237 @@
 # AI Scrum Team
 
-Locally-hosted, autonomous multi-agent software development scrum team.
+![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
+![LangGraph](https://img.shields.io/badge/langgraph-0.2+-green.svg)
+![Streamlit](https://img.shields.io/badge/streamlit-1.37+-red.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## Documentation
+**Local-first, autonomous multi-agent software development team.** Describe a product, and a full Scrum team (Prompt Agent → Product Owner → Scrum Master → Developer → QA → Reviewer) breaks it down, writes real code, validates it, and pauses for your approval — all running locally with zero cloud lock-in.
 
-- [User Guide](docs/USER_GUIDE.md) — operating the dashboard and workflow.
-- [Examples](docs/EXAMPLES.md) — sample briefs, expected flow, and regression commands.
-- [Testing](docs/TESTING.md) — unit, prompt-regression, and full-suite commands.
-- [Architecture](docs/ARCHITECTURE.md) — agent roles, state, storage, and validation gate.
-- [Production Readiness](docs/PRODUCTION_READINESS.md) — release, operations, and safety checklist.
+---
 
-## Setup
-1. Clone the repository.
-2. Run `first_run.bat` to create the environment and install dependencies.
-3. Run `start_app.bat` to launch the web dashboard.
+## What Is This?
 
-## Usage
-- **New Project**: Use the Chat tab to start a new project; the team breaks down the brief and begins execution.
-- **Human-in-the-Loop**: The run pauses for dev output review. Use the UI to "Approve" or "Request Rework".
-- **Logs**: Monitor active agents and state transitions in the Logs tab.
-- **Config**: Update model mappings in the OmniRoute settings.
+AI Scrum Team is a LangGraph orchestration that turns a natural-language brief into a complete, working codebase. Six specialized agents collaborate through a structured workflow:
 
-## Storage
-- **Projects**: Project outputs and source code are generated locally inside `projects/<project_name>/`.
-- **Short-Term Checkpoint DB**: Thread execution state is persisted per-project to `data/checkpoints.db`. This allows the LangGraph to pause for human-in-the-loop review and successfully resume across UI restarts.
-- **Long-Term Memory BaseStore**: Cross-project and cross-thread agent memories (e.g. Developer code conventions, PO definition-of-done preferences, and QA rules) are stored separately into `data/memory.db`.
+| Agent | Role | Key Capability |
+|-------|------|----------------|
+| **Prompt Agent** | Requirements Analyst | Converts raw input into a structured, unambiguous project brief |
+| **Product Owner** | Backlog Owner | Creates prioritized backlog with testable acceptance criteria |
+| **Scrum Master** | Workflow Orchestrator | Routes state, enforces sprint discipline, manages human-in-the-loop pauses |
+| **Developer** | Senior Engineer | Writes complete, correct, production-grade code — **never placeholders** |
+| **QA Engineer** | Test Specialist | Runs automated smoke checks + full verification suites |
+| **Reviewer** | Principal Tech Lead | Code review, standards enforcement, merge gatekeeping |
 
-### Resetting Memory
-If the team generates "pattern learnings" that are overly rigid or incorrect, you can wipe them using the **Memory Manager** tab in the Streamlit UI. This allows you to inspect specific memories by namespace (e.g. `("developer", "code_patterns")`), selectively delete bad entries, or perform a total memory wipe of an entire namespace natively through the frontend.
+**Validation Gate (Step 25):** Developer output is heuristically scanned for placeholder patterns (print-only bodies, TODOs, mocks, missing library calls) before QA ever sees it. Flagged output triggers automatic regeneration with corrective feedback.
 
-## Automated Testing
-To ensure system reliability, a suite of automated tests is included. To run them, use the developer-only script:
-```bash
-run_tests.bat
+**Human-in-the-Loop:** The graph pauses at `qa_approval` — you review Developer output + QA smoke results in the dashboard, then **Approve** or **Request Rework** with feedback that routes back to the Prompt Agent.
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Python 3.10+
+- Windows (`.bat` helpers included) or Linux/macOS (bash equivalents below)
+
+### Windows
+```bat
+first_run.bat     # Creates .venv, installs deps
+start_app.bat     # Launches Streamlit dashboard at http://localhost:8501
 ```
-This suite covers:
-- **Unit Tests**: Core agent logic (Prompt Agent structured output, DiffTask generation).
-- **Integration Tests**: Graph routing, state conditions, and human-in-the-loop pauses.
-- **E2E Tests**: Full pipeline regression using a fixture project.
 
-## Prompt Regression Checks
+### Linux / macOS
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run webapp/app.py
+```
 
-Prompt templates are canonical files under `scrum_team/agents/prompts/`. After changing any prompt template, run the offline prompt regression suite before trusting the change against real projects:
+### First Run Checklist
+1. Open the dashboard → **API Setup** tab
+2. Configure at least one provider connection (OmniRoute, OpenAI, Anthropic, Google, or Local/Ollama)
+3. Assign models to each agent role (default: OmniRoute `auto/best-*` aliases)
+4. Save configuration
+5. Go to **Chat** tab → Create a new project
 
+---
+
+## Architecture at a Glance
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│ Prompt      │────▶│ Product     │────▶│ Scrum       │────▶│ Developer   │────▶│ QA          │────▶│ Reviewer    │
+│ Agent       │     │ Owner       │     │ Master      │     │ (validated) │     │ Engineer    │     │             │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+       │                   │                   │                   │                   │                   │
+       ▼                   ▼                   ▼                   ▼                   ▼                   ▼
+  Structured         Backlog +           Workflow            Real code +         Smoke + full       Code review +
+  Brief              Acceptance          Routing +           DiffTask            QA results         Approval
+  (JSON)             Criteria            Human-in-the-loop                                       decision
+                                                                                │
+                                                                                ▼
+                                                                        ┌─────────────────┐
+                                                                        │ HUMAN APPROVAL  │
+                                                                        │ (Dashboard UI)  │
+                                                                        └─────────────────┘
+```
+
+**Storage:**
+- `projects/<project_name>/` — Generated source code per project
+- `data/checkpoints.db` — LangGraph thread state (enables pause/resume across restarts)
+- `data/memory.db` — Long-term cross-project agent memories (code conventions, DoD preferences, QA rules)
+
+---
+
+## Dashboard Tabs
+
+| Tab | Purpose |
+|-----|---------|
+| **Chat** | Submit briefs, start projects, review human-in-the-loop checkpoints, approve/rework |
+| **Logs** | Real-time agent activity, validation-gate events, retries, state transitions |
+| **Agents** | View/edit agent role definitions, base prompts, model assignments |
+| **API Setup** | Configure provider connections, model-role mappings (persists to `config/config.yaml`) |
+| **Memory Manager** | Inspect/delete long-term memories by namespace (e.g., `("developer", "code_patterns")`) |
+
+---
+
+## Project Structure
+
+```
+.
+├── config/
+│   ├── config.yaml            # Your provider credentials & model mappings (gitignored)
+│   ├── config.example.yaml    # Template
+│   └── settings.py            # Config loader
+├── data/
+│   ├── checkpoints.db         # LangGraph checkpoint store
+│   └── memory.db              # Long-term agent memory base store
+├── docs/
+│   ├── USER_GUIDE.md          # Operating the dashboard & workflow
+│   ├── EXAMPLES.md            # Sample briefs, expected flow, regression commands
+│   ├── ARCHITECTURE.md        # Agent roles, state, storage, validation gate
+│   ├── TESTING.md             # Unit, prompt-regression, full-suite commands
+│   └── PRODUCTION_READINESS.md# Release, operations, safety checklist
+├── projects/                  # Generated project outputs (per-project folders)
+├── scrum_team/
+│   ├── agents/                # Agent prompt templates (canonical, regression-tested)
+│   │   └── prompts/
+│   ├── graph.py               # LangGraph workflow definition
+│   ├── nodes/                 # Node implementations (prompt_agent, po_agent, dev_agent, qa_agent, reviewer_agent)
+│   ├── runner.py              # Graph execution + checkpointing
+│   ├── state.py               # Typed state schema
+│   ├── memory_store.py        # Long-term memory persistence
+│   └── utils/                 # Brief/backlog schemas, code search, diff applier, LLM factory
+├── tests/
+│   └── unit/                  # Prompt templates, validation gate, prompt regression
+├── webapp/
+│   ├── app.py                 # Streamlit dashboard (5 tabs)
+│   └── memory_ui.py           # Memory Manager UI
+├── first_run.bat              # Windows: create venv + install deps
+├── start_app.bat              # Windows: launch Streamlit
+├── run_tests.bat              # Windows: run full test suite
+└── requirements.txt
+```
+
+---
+
+## Testing & Quality Gates
+
+### Fast Offline Checks (no provider credentials needed)
+```bash
+# Unit tests only
+python -m pytest tests/unit -q
+```
+
+### Prompt Regression Gate (run after ANY prompt edit)
 ```bash
 python -m pytest tests/unit/test_prompt_templates.py tests/unit/test_step25_validation_gate.py tests/unit/test_step27_prompt_regression.py -q
 ```
+Validates: Developer output passes Step 25 validator, PO acceptance criteria are specific, QA references actual features, Reviewer names inspected files.
 
-This suite checks that Developer output still passes the Step 25 validation gate, placeholder code is rejected, PO acceptance criteria stay specific, QA output references the real work, and Reviewer output names inspected files. Live end-to-end runs require configured provider credentials and are separate from this offline gate.
+### Full Suite
+```bash
+python -m pytest tests -q
+```
+Some E2E tests require OmniRoute service + approved model routes. Failures citing provider auth or unavailable non-OmniRoute models are environment issues, not regressions.
 
-## Agent Tool Permissions & Scoping Boundaries
+### Windows Helper
+```bat
+run_tests.bat
+```
 
-| Agent Role | Allowed Tools | Permissions & Access Scope |
-| --- | --- | --- |
-| **Prompt Agent** | None | Pure text input to structured JSON brief. No file access. |
-| **Product Owner** | `get_project_backlog` | Read-only access to project backlog and DoD preferences. |
-| **Scrum Master** | `route_workflow` | State transition & graph routing only. No file system access. |
-| **Developer** | `search_code`, `apply_diff`, `read_project_file`, `write_project_file` | Code search, atomic diff application, and file read/write strictly scoped inside `projects/<project_name>/`. |
-| **QA Engineer** | `search_code`, `read_project_file`, `run_smoke_test` | Read-only file inspection & test execution inside `projects/<project_name>/`. No file write access. |
-| **Reviewer** | `search_code`, `read_project_file` | Read-only code inspection inside `projects/<project_name>/`. No write access. |
+---
+
+## Configuration
+
+Edit `config/config.yaml` (created on first save from **API Setup** tab):
+
+```yaml
+connections:
+  omniroute:
+    provider: omniroute
+    url: "http://localhost:20128/v1"
+    api_key: ""
+  openai:
+    provider: openai
+    url: "https://api.openai.com/v1"
+    api_key: ""
+  # ... anthropic, google, local (Ollama)
+
+model_mapping:
+  PO:           {connection: omniroute, model: "auto/best-reasoning"}
+  QA:           {connection: omniroute, model: "auto/best-reasoning"}
+  DEVELOPER:    {connection: omniroute, model: "auto/best-coding"}
+  SCRUM_MASTER: {connection: omniroute, model: "auto/chat"}
+  REVIEWER:     {connection: omniroute, model: "auto/chat"}
+```
+
+**Model aliases:** OmniRoute `auto/best-*` routes to the current best model per category. Replace with explicit model IDs from your chosen provider if using direct provider connections.
+
+---
+
+## Documentation
+
+| Doc | Covers |
+|-----|--------|
+| [User Guide](docs/USER_GUIDE.md) | Dashboard operation, project creation, human-in-the-loop, memory management |
+| [Examples](docs/EXAMPLES.md) | Sample briefs, expected team flow, prompt-regression commands |
+| [Architecture](docs/ARCHITECTURE.md) | Agent roles, state machine, storage, validation gate internals |
+| [Testing](docs/TESTING.md) | Test commands, prompt regression gate, live testing policy |
+| [Production Readiness](docs/PRODUCTION_READINESS.md) | Pre-release checklist, operational data, security boundaries, known limits |
+
+---
+
+## Why AI Scrum Team?
+
+| Manual Agent Orchestration | AI Scrum Team |
+|----------------------------|---------------|
+| Copy-paste prompts between tools | Single dashboard, persistent workflow |
+| No memory across sessions | Long-term cross-project memory (code conventions, DoD, QA rules) |
+| Placeholder code slips through | Heuristic validation gate (Step 25) catches stubs before QA |
+| No structured quality gate | QA smoke + full verification + Reviewer gate + **human approval** |
+| Context lost on restart | LangGraph checkpoints persist to SQLite — pause/resume anytime |
+| Ad-hoc model selection | Centralized model-role mapping per agent |
+| Hard to audit agent decisions | Full log trail + agent-specific log filtering |
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+## Contributing
+
+1. Fork → branch → PR
+2. Run prompt regression gate before committing prompt changes
+3. Run full test suite before PR
+4. Keep changes scoped; no unrelated refactoring
+
+**Prompt edits:** The regression gate in `tests/unit/` is the source of truth for output quality. If you change anything in `scrum_team/agents/prompts/`, the gate must pass.
+
+---
+
+*Built with LangGraph, Streamlit, and a bias for local-first, auditable agent workflows.*
