@@ -34,7 +34,7 @@ def add_log(message: str):
 
 
 st.set_page_config(
-    page_title="Scrum Team",
+    page_title="GraveYard",
     page_icon=":material/groups:",
     layout="wide",
 )
@@ -54,7 +54,7 @@ if "omniroute_draft" not in st.session_state:
 
 # Sidebar Navigation
 with st.sidebar:
-    st.title("Scrum Team")
+    st.title("GraveYard")
     st.caption("Local autonomous multi-agent orchestration")
 
     section = st.radio(
@@ -75,7 +75,7 @@ with st.sidebar:
 
 
 # Title Header
-st.title("AI Scrum Team Workspace")
+st.title("AI GraveYard Workspace")
 st.caption("Coordinate projects, review developer output, and automate quality assurance.")
 
 
@@ -128,12 +128,12 @@ def render_chat():
 
     col_run, col_stop = st.columns([3, 1])
     with col_run:
-        if st.button("Run Scrum Team Pipeline", type="primary", disabled=not project_name or not request.strip()):
+        if st.button("Run GraveYard Pipeline", type="primary", disabled=not project_name or not request.strip()):
             safe_name = project_name.strip().replace(" ", "-")
             (PROJECTS_DIR / safe_name).mkdir(parents=True, exist_ok=True)
             project_name = safe_name
             
-            with st.spinner("Scrum Team is executing graph workflow..."):
+            with st.spinner("GraveYard is executing graph workflow..."):
                 run_project_graph(project_name, raw_input=request, log_callback=add_log)
             st.session_state.active_project = project_name
             st.rerun()

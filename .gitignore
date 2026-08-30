@@ -18,7 +18,7 @@ __pycache__/
 
 # Local runtime state and generated project output
 /data/
-
+/docs/superpowers
 # Local IDE and OS files
 .vscode/
 .idea/
