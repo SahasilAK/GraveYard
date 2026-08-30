@@ -9,7 +9,7 @@ They get built.
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 <p align="center">
-  <img src="docs/assets/app-ui.png" alt="GraveYard AI Scrum Team dashboard UI" width="900">
+  <img src="docs/assets/app-ui.png" alt="GraveYard dashboard UI" width="900">
 </p>
 
 **Local-first, autonomous multi-agent software development team.** Describe a product, and a full Scrum team (Prompt Agent → Product Owner → Scrum Master → Developer → QA → Reviewer) breaks it down, writes real code, validates it, and pauses for your approval — all running locally with zero cloud lock-in.
