@@ -1,0 +1,71 @@
+# Local credentials and runtime configuration
+config/config.yaml
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Local Claude/agent tooling
+.claude/
+.agents/
+.skills/
+
+# Python generated files and local environments
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local runtime state and generated project output
+/data/
+/projects/
+
+# Local IDE and OS files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Streamlit local configuration
+.streamlit/config.toml
+.streamlit/secrets.toml
+
+# Local logs and databases
+*.log
+*.sqlite
+*.sqlite3
+*.db
+
+# Keep the example configuration available
+!config/config.example.yaml
+!config/
+!config/config.example.yaml
+!scrum_team/
+!webapp/
+!tests/
+!docs/
+!README.md
+!requirements.txt
+!*.bat
+!*.py
+!*.md
+!*.yaml
+!*.yml
+!*.toml
+!*.json
+!*.txt
+!*.gitignore
+
+# Re-apply local configuration exclusions after directory un-ignores
+config/config.yaml
+.streamlit/config.toml
+.streamlit/secrets.toml
+.claude/
+.agents/
+.skills/
+.venv/
+__pycache__/
+.pytest_cache/
+/data/
+/projects/

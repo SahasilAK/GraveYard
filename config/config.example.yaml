@@ -1,0 +1,28 @@
+connections:
+  omniroute:
+    provider: omniroute
+    url: "http://localhost:20128/v1"
+    api_key: ""
+  openai:
+    provider: openai
+    url: "https://api.openai.com/v1"
+    api_key: ""
+  anthropic:
+    provider: anthropic
+    url: ""
+    api_key: ""
+  google:
+    provider: google
+    url: ""
+    api_key: ""
+  local:
+    provider: local
+    url: "http://localhost:11434/v1"
+    api_key: ""
+
+model_mapping:
+  PO: {connection: omniroute, model: "auto/best-reasoning"}
+  QA: {connection: omniroute, model: "auto/best-reasoning"}
+  DEVELOPER: {connection: omniroute, model: "auto/best-coding"}
+  SCRUM_MASTER: {connection: omniroute, model: "auto/chat"}
+  REVIEWER: {connection: omniroute, model: "auto/chat"}
