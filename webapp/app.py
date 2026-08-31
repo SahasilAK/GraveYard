@@ -82,6 +82,12 @@ st.caption("Coordinate projects, review developer output, and automate quality a
 def render_chat():
     st.header("Chat")
 
+    # Initialize session state keys used in this view
+    if "chat_mode" not in st.session_state:
+        st.session_state.chat_mode = "new_project"
+    if "chat_project_name" not in st.session_state:
+        st.session_state.chat_project_name = ""
+
     mode = st.segmented_control(
         "Request mode",
         [
@@ -97,13 +103,16 @@ def render_chat():
         default="new_project",
     )
 
-    project_name = ""
+    project_name = st.session_state.chat_project_name
     if mode == "new_project":
         project_name = st.text_input(
             "Project name",
             placeholder="e.g. workout-tracker",
             help="Name of the new workspace directory",
+            value=st.session_state.chat_project_name,
+            key="chat_project_name_widget",
         )
+        st.session_state.chat_project_name = project_name
     else:
         existing_projects = list_projects()
         if existing_projects:
