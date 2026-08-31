@@ -16,7 +16,7 @@ They get built.
 
 ## What Is This?
 
-AI Scrum Team is a LangGraph orchestration that turns a natural-language brief into a complete, working codebase. Six specialized agents collaborate through a structured workflow:
+GraveYard is a LangGraph orchestration that turns a natural-language brief into a complete, working codebase. Six specialized agents collaborate through a structured workflow:
 
 | Agent | Role | Key Capability |
 |-------|------|----------------|
@@ -208,9 +208,9 @@ model_mapping:
 
 ---
 
-## Why AI Scrum Team?
+## Why GraveYard?
 
-| Manual Agent Orchestration | AI Scrum Team |
+| Manual Agent Orchestration | GraveYard |
 |----------------------------|---------------|
 | Copy-paste prompts between tools | Single dashboard, persistent workflow |
 | No memory across sessions | Long-term cross-project memory (code conventions, DoD, QA rules) |
